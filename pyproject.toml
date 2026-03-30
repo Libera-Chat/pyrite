@@ -1,0 +1,26 @@
+[project]
+name = "pyrite"
+description = "ircv3 feature downgrade bot"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "cachetools>=7.0.0",
+    "ircrobots>=0.7.2",
+]
+dynamic = ["version"]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.1.1",
+    "mypy>=1.13.0",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyrite.__version__"}
+
+[tool.pyright]
+reportPrivateImportUsage = "none"
+
+[tool.mypy]
+ignore_missing_imports = true
+warn_no_return = false
