@@ -110,17 +110,19 @@ class PyriteServer(Server):
         if (target := get_target(line)).lower() == self.nickname.lower() or \
             line.hostmask.nickname.lower() == self.nickname.lower():
             return
+        if target == self._config.log:
+            return
 
         old_typing, old_time = self.typing_cache[target].get(line.hostmask.nickname, ("", -1))
         if abs(time.monotonic() - old_time) < 3.0: # basic rate limit
             return
 
-        if typing == "active": # troll typing
-            self.send(build("TAGMSG", [target], tags={"+typing": "active"}))
-
         if typing != old_typing:
             self.update_typing_cache(target, line.hostmask.nickname, typing)
             self.send(build("NOTICE", [target, self.responses.get(typing).format(nick=line.hostmask.nickname, channel=target)]))
+
+        if typing == "active": # troll typing
+            self.send(build("TAGMSG", [target], tags={"+typing": "active"}))
 
     @on_message("INVITE",
                 lambda ln: ln.source is not None)
