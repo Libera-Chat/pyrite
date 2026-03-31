@@ -144,7 +144,7 @@ class PyriteServer(Server):
         sender = line.hostmask
         chan = line.params[-1]
         self.log(f"invited to join {chan} at the request of {sender}")
-        self.send(build("JOIN", [chan]))
+        self.send_join(chan)
 
     @on_message("JOIN",
                 lambda ln: ln.source is not None)
