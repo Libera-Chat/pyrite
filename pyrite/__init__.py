@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 import time
@@ -74,6 +75,11 @@ class PyriteServer(Server):
 
     def update_typing_cache(self, target: str, nick: str, new_value: str):
         self.typing_cache[target][nick] = (new_value, time.monotonic())
+
+    async def _batch_joins(self, channels: list[str], batch_n: int = 10):
+        self.send_nick(self._config.nickname)
+        await asyncio.sleep(5)
+        return await super()._batch_joins(channels, batch_n)
 
     # message handlers {{{
 
