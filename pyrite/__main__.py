@@ -27,13 +27,16 @@ async def main(config: Config):
     autojoin = config.channels
     if config.log:
         autojoin.append(config.log)
-    with Path(config.invite_cache).open("r") as f:
-        try:
-            cache = json.load(f)
-        except json.decoder.JSONDecodeError:
-            cache = {}
-        if "channels" in cache:
-            autojoin += cache["channels"]
+    try:
+        with Path(config.invite_cache).open("r") as f:
+            try:
+                cache = json.load(f)
+            except json.decoder.JSONDecodeError:
+                cache = {}
+            if "channels" in cache:
+                autojoin += cache["channels"]
+    except FileNotFoundError:
+        pass
     params.autojoin = autojoin
 
     await bot.add_server("pyrite", params)
