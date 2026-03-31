@@ -19,10 +19,8 @@ __version__ = "0.1.0"
 
 @dataclass
 class Responses:
-    active: list[str] = field(default_factory=list)
-    paused: list[str] = field(default_factory=list)
-    done: list[str] = field(default_factory=list)
-    other: list[str] = field(default_factory=list)
+    default: dict[str, str] = field(default_factory=dict)
+    silly: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_file(cls, path: str):
@@ -31,13 +29,26 @@ class Responses:
             return cls(**data)
 
     def get(self, state: str) -> str:
-        return random.choice(getattr(self, state))
+        if random.random() <= 0.69:
+            pool = self.default
+        else:
+            pool = self.silly
+
+        try:
+            return random.choice(pool[state])
+        except KeyError:
+            return random.choice(self.silly["other"])
 
     def __repr__(self) -> str:
-        return (f"{len(self.active)} active, "
-                f"{len(self.paused)} paused, "
-                f"{len(self.done)} done, "
-                f"{len(self.other)} other")
+        return ("default: "
+                f"{len(self.default['active'])} active, "
+                f"{len(self.default['paused'])} paused, "
+                f"{len(self.default['done'])} done; "
+                "silly: "
+                f"{len(self.silly['active'])} active, "
+                f"{len(self.silly['paused'])} paused, "
+                f"{len(self.silly['done'])} done, "
+                f"{len(self.silly['other'])} other")
 
 
 def get_target(line: Line) -> str:
