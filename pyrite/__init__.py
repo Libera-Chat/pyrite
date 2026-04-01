@@ -163,6 +163,7 @@ class PyriteServer(Server):
                         cache = json.load(f)
                     except json.decoder.JSONDecodeError:
                         cache = {}
+                    print("[*] cache:", cache)
                     if "channels" not in cache:
                         cache["channels"] = []
                     if chan not in cache["channels"]:
@@ -181,6 +182,7 @@ class PyriteServer(Server):
                 cache = json.load(f)
             except json.decoder.JSONDecodeError:
                 cache = {}
+            print("[*] cache:", cache)
             if "channels" not in cache:
                 cache["channels"] = []
             if chan in cache["channels"]:

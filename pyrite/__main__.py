@@ -33,6 +33,7 @@ async def main(config: Config):
                 cache = json.load(f)
             except json.decoder.JSONDecodeError:
                 cache = {}
+            print("[*] cache:", cache)
             if "channels" in cache:
                 autojoin += cache["channels"]
     except FileNotFoundError:
