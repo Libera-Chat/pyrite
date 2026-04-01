@@ -158,7 +158,7 @@ class PyriteServer(Server):
             chan = line.params[0]
             self.log(f"joined {chan}")
             if chan not in self._config.channels:
-                with Path(self._config.invite_cache).open("w+") as f:
+                with Path(self._config.invite_cache).open("r+") as f:
                     try:
                         cache = json.load(f)
                     except json.decoder.JSONDecodeError:
@@ -177,7 +177,7 @@ class PyriteServer(Server):
             return
         chan = line.params[0]
         self.log(f"kicked from {chan} (reason: {line.params[-1]})")
-        with Path(self._config.invite_cache).open("w+") as f:
+        with Path(self._config.invite_cache).open("r+") as f:
             try:
                 cache = json.load(f)
             except json.decoder.JSONDecodeError:
