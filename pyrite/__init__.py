@@ -170,7 +170,9 @@ class PyriteServer(Server):
                         cache["channels"] = []
                     if chan not in cache["channels"]:
                         cache["channels"].append(chan)
+                    f.seek(0)
                     json.dump(cache, f)
+                    f.truncate()
 
     @on_message("KICK",
                 lambda ln: ln.source is not None)
@@ -189,7 +191,9 @@ class PyriteServer(Server):
                 cache["channels"] = []
             if chan in cache["channels"]:
                 cache["channels"].remove(chan)
+            f.seek(0)
             json.dump(cache, f)
+            f.truncate()
 
     # }}}
 
