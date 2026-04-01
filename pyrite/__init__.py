@@ -1,6 +1,6 @@
 import asyncio
 import json
-import random
+import secrets
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -30,15 +30,14 @@ class Responses:
             return cls(**data)
 
     def get(self, state: str) -> str:
-        if random.random() <= 0.69:
+        if secrets.randbelow(100) < 69:
             pool = self.default
         else:
             pool = self.silly
-
         try:
-            return random.choice(pool[state])
+            return secrets.choice(pool[state])
         except KeyError:
-            return random.choice(self.silly["other"])
+            return secrets.choice(self.silly["other"])
 
     def __repr__(self) -> str:
         return ("default: "
