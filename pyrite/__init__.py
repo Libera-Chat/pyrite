@@ -20,6 +20,8 @@ __version__ = "0.1.0"
 
 @dataclass
 class Responses:
+    # percent normal
+    rate: int = 69
     default: dict[str, str] = field(default_factory=dict)
     silly: dict[str, str] = field(default_factory=dict)
 
@@ -30,7 +32,7 @@ class Responses:
             return cls(**data)
 
     def get(self, state: str) -> str:
-        if secrets.randbelow(100) < 69:
+        if secrets.randbelow(100) < self.rate:
             pool = self.default
         else:
             pool = self.silly
@@ -48,7 +50,7 @@ class Responses:
                 f"{len(self.silly['active'])} active, "
                 f"{len(self.silly['paused'])} paused, "
                 f"{len(self.silly['done'])} done, "
-                f"{len(self.silly['other'])} other")
+                f"{len(self.silly['other'])} other (rate: {self.rate}%)")
 
 
 def get_target(line: Line) -> str:
