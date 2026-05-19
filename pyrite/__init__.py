@@ -65,14 +65,16 @@ class PyriteServer(Server):
     def __init__(self, bot: ircrobots.Bot, name: str, config: Config):
         super().__init__(bot, name, config)
 
-        self.typing_cache: dict[str, TTLCache[str, tuple[str, float]]] = defaultdict(lambda: TTLCache(maxsize=10000, ttl=30)) # TODO: or 6?
+        # channel: {nick: (state, time)} - store for up to 30 seconds
+        self.typing_cache: dict[str, TTLCache[str, tuple[str, float]]] = defaultdict(lambda: TTLCache(maxsize=10000, ttl=30))
 
-        try:
-            self.responses = Responses.from_file(self._config.response_file)
-            print(f"[*] loaded responses: {self.responses}")
-        except Exception as e:
-            self.responses = Responses()
-            print(f"[!] failed to load responses from {self._config.response_file}: {e}")
+        if self._config.enable_typing:
+            try:
+                self.responses = Responses.from_file(self._config.response_file)
+                print(f"[*] loaded responses: {self.responses}")
+            except Exception as e:
+                self.responses = Responses()
+                print(f"[!] failed to load responses from {self._config.response_file}: {e}")
 
     def update_typing_cache(self, target: str, nick: str, new_value: str):
         self.typing_cache[target][nick] = (new_value, time.monotonic())
@@ -111,6 +113,9 @@ class PyriteServer(Server):
     @on_message("PRIVMSG",
                 lambda ln: ln.source is not None and ln.tags is not None)
     async def expire_cache_on_send(self, line: Line):
+        """manage typing cache"""
+        if not self._config.enable_typing:
+            return
         if (target := get_target(line)).lower() == self.nickname.lower():
             return
         nick = line.hostmask.nickname
@@ -120,7 +125,9 @@ class PyriteServer(Server):
     @on_message("TAGMSG",
                 lambda ln: ln.source is not None and len(ln.params) > 0 and ln.tags is not None)
     async def on_typing(self, line: Line):
-        """handle tag messages"""
+        """handle typing tag messages"""
+        if not self._config.enable_typing:
+            return
         if line.tags is None or line.source is None:
             return
         if not (typing := line.tags.get("+typing")):
