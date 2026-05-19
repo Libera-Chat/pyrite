@@ -13,6 +13,8 @@ from irctokens import build, Line
 from .config import Config
 
 CAP_MSG_TAGS = ircv3.Capability("message-tags")
+CAP_SERVER_TIME = ircv3.Capability("server-time")
+CAP_ECHO_MSG = ircv3.Capability("echo-message")
 
 
 @dataclass
@@ -91,7 +93,7 @@ command = Command
 class Server(ircrobots.Server):
     def __init__(self, bot: ircrobots.Bot, name: str, config: Config):
         super().__init__(bot, name)
-        self.desired_caps |= {CAP_MSG_TAGS}
+        self.desired_caps |= {CAP_MSG_TAGS, CAP_SERVER_TIME, CAP_ECHO_MSG}
         self._init = False
         self._config = config
         self._cmd_handlers = {

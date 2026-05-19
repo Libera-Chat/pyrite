@@ -35,6 +35,7 @@ class Config:
     invite_cache: str
     command_allowmask: str
     enable_typing: bool
+    enable_reply_react: bool
 
     @classmethod
     def from_file(cls, fp: str | Path):
@@ -62,4 +63,5 @@ class Config:
             invite_cache=settings_toml.get("invite_cache", "./channels.json"),
             command_allowmask=settings_toml.get("command_allowmask", "libera/staff/*"),
             enable_typing=settings_toml.get("enable_typing", True),
+            enable_reply_react=settings_toml.get("enable_reply_react", True),
         )

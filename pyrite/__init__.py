@@ -4,6 +4,7 @@ import secrets
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime, UTC
 from pathlib import Path
 
 from cachetools import TTLCache
@@ -67,6 +68,8 @@ class PyriteServer(Server):
 
         # channel: {nick: (state, time)} - store for up to 30 seconds
         self.typing_cache: dict[str, TTLCache[str, tuple[str, float]]] = defaultdict(lambda: TTLCache(maxsize=10000, ttl=30))
+        # msgid: (nick, timestamp) - store for up to 7 days
+        self.msg_cache: TTLCache[str, tuple[str, datetime]] = TTLCache(maxsize=100000, ttl=60*60*24*7)
 
         if self._config.enable_typing:
             try:
@@ -148,6 +151,48 @@ class PyriteServer(Server):
 
         if typing == "active": # troll typing
             self.send(build("TAGMSG", [target], tags={"+typing": "active"}))
+
+    @on_message(("PRIVMSG", "NOTICE", "TAGMSG"),
+                lambda ln: ln.source is not None and ln.tags is not None)
+    async def handle_reply_react(self, line: Line):
+        if not self._config.enable_reply_react:
+            return
+        if line.tags is None or line.source is None:
+            return
+        if not (msgid := line.tags.get("msgid")):
+            return
+        if (target := get_target(line)).lower() == self.nickname.lower() or \
+            line.hostmask.nickname.lower() == self.nickname.lower():
+            return
+        if target == self._config.log:
+            return
+
+        nick = line.hostmask.nickname
+
+        if line.command != "TAGMSG":
+            if (msg_ts_str := line.tags.get("time")):
+                msg_ts = datetime.fromisoformat(msg_ts_str)
+            else:
+                msg_ts = datetime.now(UTC)
+
+            self.msg_cache[msgid] = (nick, msg_ts)
+
+        reply = line.tags.get("+reply", line.tags.get("+draft/reply"))
+        react = line.tags.get("+draft/react")
+        unreact = line.tags.get("+draft/unreact")
+
+        if reply:
+            reply_nick, reply_ts = self.msg_cache.get(reply, (None, None))
+            if not reply_nick:  # not in cache
+                return
+            time = f"on {reply_ts:%Y-%m-%d} at {reply_ts:%H:%M:%S} UTC"
+
+            if react:
+                self.send(build("NOTICE", [target, f"{nick} reacted {react} to the message by {reply_nick} {time}"]))
+            elif unreact:
+                self.send(build("NOTICE", [target, f"{nick} unreacted {unreact} to the message by {reply_nick} {time}"]))
+            else:
+                self.send(build("NOTICE", [target, f"{nick} replied to the message by {reply_nick} {time}"]))
 
     @on_message("INVITE",
                 lambda ln: ln.source is not None)
