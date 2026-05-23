@@ -17,7 +17,8 @@ async def main(config: Config):
     params.username = config.username
     params.realname = config.realname
     params.password = config.password
-    params.sasl = SASLUserPass(config.sasl.user, config.sasl.password)
+    if config.sasl is not None:
+        params.sasl = SASLUserPass(config.sasl.user, config.sasl.password)
     if config.tls_verify:
         TLS = TLSVerifyChain
     else:

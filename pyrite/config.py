@@ -26,7 +26,7 @@ class Config:
     channels: list[str]
     log: str | None
 
-    sasl: SaslConfig
+    sasl: SaslConfig | None
 
     timeout: float
     tls_verify: bool
@@ -45,7 +45,10 @@ class Config:
 
         irc_toml = config_toml["irc"]
         settings_toml = config_toml.get("settings", dict())
-        sasl = SaslConfig.from_toml(config_toml["sasl"])
+        if (sasl_toml := config_toml.get("sasl")):
+            sasl = SaslConfig.from_toml(sasl_toml)
+        else:
+            sasl = None
 
         return cls(
             server=irc_toml["server"],
