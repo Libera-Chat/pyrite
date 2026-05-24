@@ -26,7 +26,7 @@ class Config:
     channels: list[str]
     log: str | None
 
-    sasl: SaslConfig
+    sasl: SaslConfig | None
 
     timeout: float
     tls_verify: bool
@@ -34,6 +34,8 @@ class Config:
     response_file: str
     invite_cache: str
     command_allowmask: str
+    enable_typing: bool
+    enable_reply_react: bool
 
     @classmethod
     def from_file(cls, fp: str | Path):
@@ -43,7 +45,10 @@ class Config:
 
         irc_toml = config_toml["irc"]
         settings_toml = config_toml.get("settings", dict())
-        sasl = SaslConfig.from_toml(config_toml["sasl"])
+        if (sasl_toml := config_toml.get("sasl")):
+            sasl = SaslConfig.from_toml(sasl_toml)
+        else:
+            sasl = None
 
         return cls(
             server=irc_toml["server"],
@@ -59,5 +64,7 @@ class Config:
             allow_invite=settings_toml.get("allow_invite", False),
             response_file=settings_toml.get("response_file", "./responses.json"),
             invite_cache=settings_toml.get("invite_cache", "./channels.json"),
-            command_allowmask=settings_toml.get("command_allowmask", "libera/staff/*")
+            command_allowmask=settings_toml.get("command_allowmask", "libera/staff/*"),
+            enable_typing=settings_toml.get("enable_typing", True),
+            enable_reply_react=settings_toml.get("enable_reply_react", True),
         )
